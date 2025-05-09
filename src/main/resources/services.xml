@@ -1,17 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+<beans
+    default-lazy-init="true"
+    xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- services -->
-    <bean id="petStoreService" class="main.PetStoreService">
-        <property name="petControllService" ref="petControllService" />
+    <bean name="petStoreService" class="main.PetStoreService">
+        <constructor-arg ref="petControllService" index="0" />
+        <constructor-arg type="java.lang.String" value="new name" index="1" />
         <!-- additional collaborators and configuration for this bean go here -->
     </bean>
-    <!-- more bean definitions for services go here -->
 
-    <bean id="petControllService" class="main.PetControllService">
+    <bean name="petStoreWithInnerBeanPetControll" class="main.PetStoreService">
+        <constructor-arg index="0">
+            <bean class="main.PetControllService"
+                factory-method="createDefault"
+            />
+        </constructor-arg>
+        <constructor-arg type="java.lang.String" value="new name" index="1" />
         <!-- additional collaborators and configuration for this bean go here -->
+    </bean>
+
+    <bean name="petControllerWithCollections" class="main.PetControllService">
+        <constructor-arg>
+            <list>
+                <value>name1</value>
+                <value>name2</value>
+            </list>
+        </constructor-arg>
+        <constructor-arg>
+            <map>
+                <entry key="key-with-text" value="text"></entry>
+                <entry key="key-with-obj" value-ref="petControllService"></entry>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean name="test" class="main.PetControllService">
+        <constructor-arg value="name" />
+        <property name="namesAndObjects">
+            <map>
+                <entry key="key-with-text" value="text"></entry>
+                <entry key="key-with-obj" value-ref="petControllService"></entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean name="petControlerWithCollectionChild" parent="test">
+        <property name="namesAndObjects">
+            <map merge="true">
+                <entry key="child-key-with-text" value="text"></entry>
+                <entry key="key-with-text" value="new text"></entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="petControllService" class="main.PetControllService" factory-method="create">
+        <constructor-arg type="java.lang.String" value="pet Controll Name"></constructor-arg>
+    </bean>
+
+    <bean id="petControllServiceCopy"
+        factory-bean="petControllService"
+        factory-method="createCopy">
+    </bean>
+
+    <bean id="nestPetControll" class="main.PetControllService$NestPetControll">
+    </bean>
+
+
+    <bean id="petControllServiceDepended" class="main.PetControllService"
+        factory-method="createWithEcho"
+        depends-on="petControllServiceNotDepended">
+        <constructor-arg type="java.lang.String" value="Pet Controll Service Depend On Is Loaded" />
+    </bean>
+
+    <bean id="petControllServiceNotDepended" class="main.PetControllService"
+        factory-method="createWithEcho">
+        <constructor-arg type="java.lang.String"
+            value="Pet Controll Service NOT depend on is Loaded" />
+    </bean>
+
+    <alias name="petStoreService" alias="aliasForPetStore" />
+
+    <bean id="lazyPetControll" class="main.PetControllService" lazy-init="true"
+        factory-method="createWithEcho">
+        <constructor-arg value="Its a lazy Pet Controll"></constructor-arg>
     </bean>
 
 </beans>
