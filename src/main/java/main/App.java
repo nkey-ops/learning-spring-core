@@ -1,32 +1,31 @@
 package main;
 
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.context.support.GenericApplicationContext;
-
 import java.io.IOException;
+
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /** Hello world! */
 public class App {
     public static void main(String[] args) throws IOException {
-        var genericContext = new GenericApplicationContext();
-        genericContext.setAllowBeanDefinitionOverriding(false);
-        new XmlBeanDefinitionReader(genericContext).loadBeanDefinitions("services.xml");
+        var ctx = new ClassPathXmlApplicationContext(new String[]{"services.xml"});
+        ctx.setAllowBeanDefinitionOverriding(false);
+        // new XmlBeanDefinitionReader(genericContext).loadBeanDefinitions("services.xml");
 
-        genericContext.refresh();
-        System.out.println(genericContext);
+        // System.out.println("Context Refresh");
+        System.out.println(ctx);
 
-        var petStoreBean = genericContext.getBean("petStoreService", PetStoreService.class);
+        var petStoreBean = ctx.getBean("petStoreService", PetStoreService.class);
         var petStoreBeanWithInnerBean =
-                genericContext.getBean("petStoreWithInnerBeanPetControll", PetStoreService.class);
+                ctx.getBean("petStoreWithInnerBeanPetControll", PetStoreService.class);
         var petStoreBeanViaAliase =
-                genericContext.getBean("aliasForPetStore", PetStoreService.class);
+                ctx.getBean("aliasForPetStore", PetStoreService.class);
         var petControllService =
-                genericContext.getBean("petControllService", PetControllService.class);
+                ctx.getBean("petControllService", PetControllService.class);
         var petControllCopy =
-                genericContext.getBean("petControllServiceCopy", PetControllService.class);
+                ctx.getBean("petControllServiceCopy", PetControllService.class);
         var nestPetControll =
-                genericContext.getBean("nestPetControll", PetControllService.NestPetControll.class);
+                ctx.getBean("nestPetControll", PetControllService.NestPetControll.class);
         System.out.println(petStoreBean);
         System.out.println(petStoreBeanViaAliase);
         System.out.println(petStoreBeanWithInnerBean);
@@ -35,27 +34,46 @@ public class App {
         System.out.println(nestPetControll);
 
         var listableBeanFactory =
-                ((DefaultListableBeanFactory) genericContext.getAutowireCapableBeanFactory());
+                ((DefaultListableBeanFactory) ctx.getAutowireCapableBeanFactory());
         listableBeanFactory.registerSingleton(
                 NonRegisteredBean.class.getName(), NonRegisteredBean.class);
-        var nonRegBean = genericContext.getBean(NonRegisteredBean.class.getName());
+        var nonRegBean = ctx.getBean(NonRegisteredBean.class.getName());
         System.out.println(nonRegBean);
 
-        var beanFactory = genericContext.getBeanFactory();
+        var beanFactory = ctx.getBeanFactory();
         System.out.println(beanFactory);
         System.out.println(beanFactory.getType("petControllService"));
 
         var petConWithColle =
-                genericContext.getBean("petControllerWithCollections", PetControllService.class);
+                ctx.getBean("petControllerWithCollections", PetControllService.class);
         System.out.println(petConWithColle);
 
-        var test = genericContext.getBean("test", PetControllService.class);
+        var test = ctx.getBean("test", PetControllService.class);
         System.out.println(test);
         var petControllerWithCollectionChild =
-                genericContext.getBean("petControlerWithCollectionChild", PetControllService.class);
+                ctx.getBean("petControlerWithCollectionChild", PetControllService.class);
         System.out.println(petControllerWithCollectionChild);
 
-        System.out.println(genericContext.getBean("lazyPetControll"));
+        System.out.println(ctx.getBean("lazyPetControll"));
 
+        System.out.println(ctx.getBean("getAllBeansViaList"));
+
+        var bean = ctx.getBean("needForNewBean", NeedForNewPrototypeBean.class);
+        bean.superImportantOperationButNeedsNewBeanEachTime();
+        bean.superImportantOperationButNeedsNewBeanEachTime();
+        bean.superImportantOperationButNeedsNewBeanEachTime();
+        bean.newBeanWithAOP();
+        bean.newBeanWithAOP();
+        bean.newBeanWithAOP();
+
+        System.out.println("Closing The Context");
+        ctx.close();
+        System.out.println("Refreshing The Context");
+        ctx.refresh();
+        System.out.println("Stopping The Context");
+        ctx.stop();
+
+
+        ctx.registerShutdownHook();
     }
 }

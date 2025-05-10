@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans
-    default-lazy-init="true"
     xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd
+                        ">
 
     <!-- services -->
     <bean name="petStoreService" class="main.PetStoreService">
@@ -86,6 +88,37 @@
     <bean id="lazyPetControll" class="main.PetControllService" lazy-init="true"
         factory-method="createWithEcho">
         <constructor-arg value="Its a lazy Pet Controll"></constructor-arg>
+    </bean>
+
+    <bean id="getAllBeansViaList" class="main.GetAllBeansNow"
+        autowire="constructor"></bean>
+
+    <bean id="needForNewBean" class="main.NeedForNewPrototypeBean">
+        <constructor-arg ref="prototypeBean" />
+        <lookup-method name="getPrototypeBeanNew" bean="prototypeBean"></lookup-method>
+    </bean>
+
+    <bean id="prototypeBean" class="main.NeedForNewPrototypeBean.PrototypeBean"
+        scope="prototype">
+        <aop:scoped-proxy />
+    </bean>
+
+    <bean class="main.PostInitAndPreDestroy.InitializingAndDisposableBean " />
+    <bean class="main.PostInitAndPreDestroy.PostConstructAndPreDestroyBean " />
+    <bean class="main.PostInitAndPreDestroy.InitAndDestroyBean "
+        init-method="init"
+        destroy-method="destroy" />
+
+    <bean class="main.LifecycledBeans.LifecycleProcessedBean" lazy-init="true" />
+    <bean class="main.LifecycledBeans.SmartcycleBean"
+        init-method="init"
+        destroy-method="destroy"
+        lazy-init="true" />
+
+    <bean id="lifecycleProcessor"
+        class="org.springframework.context.support.DefaultLifecycleProcessor">
+        <!-- timeout value in milliseconds -->
+        <property name="timeoutPerShutdownPhase" value="10000" />
     </bean>
 
 </beans>
