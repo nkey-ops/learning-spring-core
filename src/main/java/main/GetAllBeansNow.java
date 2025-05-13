@@ -5,6 +5,8 @@ import static java.util.Objects.requireNonNull;
 import java.util.List;
 import java.util.Map;
 
+import main.annotations.PetControllService;
+
 public class GetAllBeansNow {
 
     private List<PetControllService> beanList;

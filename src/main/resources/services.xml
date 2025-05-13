@@ -3,9 +3,12 @@
     xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
     xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd
-                        ">
+                        http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config />
 
     <!-- services -->
     <bean name="petStoreService" class="main.PetStoreService">
@@ -121,4 +124,51 @@
         <property name="timeoutPerShutdownPhase" value="10000" />
     </bean>
 
+    <bean id="parent" abstract="true" class="main.Inheritance.Inheritor">
+        <!-- <constructor-arg name="id" value="5"></constructor-arg> -->
+        <property name="name" value="parent name"></property>
+    </bean>
+
+    <bean id="inheritor" parent="parent"> </bean>
+
+    <!-- <bean class="main.PostProcessingBeans" /> -->
+
+    <bean id="requiredArguments" class="main.RequiredArguments">
+        <constructor-arg value="${required-arguments.arg-1}"></constructor-arg>
+    </bean>
+
+    <!-- <bean id="qualifiers" class="main.Qualifiers" autowire="byType"> -->
+    <!-- </bean> -->
+    <!-- <bean class="main.Qualifiers.BeanA" -->
+    <!--     factory-bean="qualifiers" -->
+    <!--     factory-method="beanA"> -->
+    <!--     <qualifier value="beanA"></qualifier> -->
+    <!-- </bean> -->
+    <!-- <bean class="main.Qualifiers.BeanA" -->
+    <!--     factory-bean="qualifiers" -->
+    <!--     factory-method="beanB"> -->
+    <!--     <qualifier value="beanB"></qualifier> -->
+    <!-- </bean> -->
+    <!---->
+
+    <bean class="main.xmlconfig.ExtendingQualifiers" autowire="byType"></bean>
+
+    <bean class="main.xmlconfig.ExtendingQualifiers"
+        factory-method="bean1">
+        <qualifier
+            type="main.xmlconfig.MovieQ">
+            <attribute key="genre" value="horror" />
+            <attribute key="format" value="VHS" />
+        </qualifier>
+    </bean>
+
+    <bean class="main.xmlconfig.ExtendingQualifiers"
+        factory-method="bean2"
+        primary="true"
+    >
+        <meta key="genre" value="horror" />
+        <meta key="format" value="VHS" />
+    </bean>
+
+    <context:property-placeholder location="application.properties" />
 </beans>

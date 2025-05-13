@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import main.annotations.PetControllService;
+
 public class PetStoreService {
 
     private PetControllService petControllService;
