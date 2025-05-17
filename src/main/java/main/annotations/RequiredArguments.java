@@ -15,6 +15,9 @@ import main.PetStoreService;
 @Component
 public class RequiredArguments {
 
+    /**
+     * @param arg1
+     */
     @Autowired(required = false)
     public RequiredArguments(@Value("${required-arguments.arg-1}") Integer arg1) {
         requireNonNull(arg1);
