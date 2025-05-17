@@ -4,6 +4,7 @@ import main.annotations.ConversionDate;
 import main.annotations.ConvertedDate;
 import main.annotations.FormattStrings;
 import main.annotations.FormattStrings.WeirdString;
+import main.annotations.MethodValidation;
 import main.annotations.PetControllService;
 import main.annotations.Profiled;
 import main.annotations.Validation;
@@ -34,7 +35,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.validation.method.MethodValidationException;
+import org.springframework.validation.method.MethodValidator;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -51,6 +55,24 @@ public class App {
     public static void main(String[] args) throws IOException, InterruptedException {
         // var ctx = new ClassPathXmlApplicationContext("config-resolver.xml");
 
+        var ctx = new AnnotationConfigApplicationContext();
+        ctx.registerBean(App.class);
+        ctx.registerBean(MethodValidation.class);
+        ctx.refresh();
+
+        try {
+            ctx.getBean(MethodValidation.class).setName("weird");
+        } catch (MethodValidationException e) {
+            var  codes = e.getAllErrors().get(0).getCodes();
+            var  codes2 = e.getAllErrors().get(1).getCodes();
+                System.out.println(Arrays.toString(codes));
+                System.out.println(Arrays.toString(codes2));
+       System.out.println(e.getAllErrors());
+
+        }
+    }
+
+    private static void validation() {
         var ctx = new AnnotationConfigApplicationContext();
         ctx.scan("main.validation");
         ctx.register(App.class);
@@ -387,10 +409,10 @@ public class App {
         return m;
     }
 
-    @Bean
-    public static LocalValidatorFactoryBean localFactory() {
-        return new LocalValidatorFactoryBean();
-    }
+    // @Bean
+    // public static LocalValidatorFactoryBean localFactory() {
+    //     return new LocalValidatorFactoryBean();
+    // }
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
