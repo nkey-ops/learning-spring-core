@@ -2,14 +2,17 @@ package main;
 
 import main.annotations.ConversionDate;
 import main.annotations.ConvertedDate;
+import main.annotations.ExtendingQualifiers;
 import main.annotations.FormattStrings;
 import main.annotations.FormattStrings.WeirdString;
 import main.annotations.MethodValidation;
 import main.annotations.PetControllService;
 import main.annotations.Profiled;
+import main.annotations.SpelWithBeans;
 import main.annotations.Validation;
 import main.model.request.validation.PersonRequestValidator;
 import main.validation.NonWeirdStringConstrainer;
+import main.xmlconfig.NoIdBean;
 
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.MutablePropertyValues;
@@ -19,6 +22,8 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -32,29 +37,140 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.expression.Expression;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.SpelParserConfiguration;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.method.MethodValidationException;
-import org.springframework.validation.method.MethodValidator;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 // @PropertySource("application.properties")
 @Configuration
+@ComponentScan(includeFilters = @Filter(pattern = "") )
 public class App {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        // var ctx = new ClassPathXmlApplicationContext("config-resolver.xml");
+        var ctx = new ClassPathXmlApplicationContext("utils.xml");
+        ctx.refresh();
 
+        System.out.println(Arrays.toString(ctx.getBeanDefinitionNames()));
+        System.out.println(ctx.getBean("myField"));
+        System.out.println(ctx.getBean("java.sql.Connection.TRANSACTION_SERIALIZABLE"));
+        System.out.println(ctx.getBean("better-stat"));
+    }
+
+
+    private static void spelCofig() {
+        class Demo {
+            public List<String> list;
+        }
+        var conf = new SpelParserConfiguration(true,true);
+        var spel = new SpelExpressionParser(conf);
+
+        Demo rootObject = new Demo();
+        var str = spel.parseExpression("list[3]").getValue(rootObject);
+
+        System.out.println(rootObject.list);
+    }
+
+
+    private static void getSimple() {
+        class Simple {
+            public List<Boolean> bools = new ArrayList<>(List.of(false, false, false));
+            public int i = 10;
+        }
+
+         var spel = new SpelExpressionParser();
+         var ctx = SimpleEvaluationContext.forReadWriteDataBinding().build();;
+         var simple = new Simple();
+         spel.parseExpression("bools[0]").setValue(ctx, simple, "true");
+         spel.parseExpression("i").setValue(ctx, simple, "20");
+
+
+         System.out.println(simple.bools);
+         System.out.println(simple.i);
+    }
+    
+
+    private static void spelPropertyAccess() {
+        class TestObject {
+            private String name;
+            private int age;
+            private String[] usernames;
+
+            public TestObject(String name, int age, String[] usernames) {
+                this.name = name;
+                this.age = age;
+                this.usernames = usernames;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public int getAge() {
+                return age;
+            }
+
+            public void setAge(int age) {
+                this.age = age;
+            }
+
+            public String[] getUsernames() {
+                return usernames;
+            }
+
+            public void setUsernames(String[] usernames) {
+                this.usernames = usernames;
+            }
+
+        }
+
+        var spel = new SpelExpressionParser();
+
+        var obj = new TestObject("Test", 5, new String[]{"name1", "name2"});
+        var ex = spel.parseExpression("name");;
+
+        var name =  ex.getValue(obj, String.class);
+        var age =  spel.parseExpression("age").getValue(obj, String.class);
+        var names =  spel.parseExpression("usernames").getValue(obj, String[].class);
+        System.out.println(name + " " + age + " " + Arrays.toString( names));
+    }
+
+    private static void simpleSpel() {
+        var spel = new SpelExpressionParser();
+        var expression = spel.parseExpression("'Hello World'");
+        System.out.println(expression.getValue());
+        expression = spel.parseExpression("'Hello World'.concat('!!!')");
+        System.out.println(expression.getValue());
+
+        expression = spel.parseExpression("'Hello World'.bytes");
+        System.out.println(Arrays.toString((byte[])expression.getValue()));
+
+        expression = spel.parseExpression("'Hello World'.bytes.length");
+        System.out.println(expression.getValue());
+
+        expression = spel.parseExpression("new String('Hi From The Constructor')");
+        System.out.println(expression.getValue());
+    }
+    private static void methodValidation() {
         var ctx = new AnnotationConfigApplicationContext();
         ctx.registerBean(App.class);
         ctx.registerBean(MethodValidation.class);
@@ -63,12 +179,11 @@ public class App {
         try {
             ctx.getBean(MethodValidation.class).setName("weird");
         } catch (MethodValidationException e) {
-            var  codes = e.getAllErrors().get(0).getCodes();
-            var  codes2 = e.getAllErrors().get(1).getCodes();
-                System.out.println(Arrays.toString(codes));
-                System.out.println(Arrays.toString(codes2));
-       System.out.println(e.getAllErrors());
-
+            var codes = e.getAllErrors().get(0).getCodes();
+            var codes2 = e.getAllErrors().get(1).getCodes();
+            System.out.println(Arrays.toString(codes));
+            System.out.println(Arrays.toString(codes2));
+            System.out.println(e.getAllErrors());
         }
     }
 
@@ -388,18 +503,18 @@ public class App {
         ctx.registerShutdownHook();
     }
 
-    @EventListener(
-            classes = {
-                ContextStartedEvent.class,
-                ContextRefreshedEvent.class,
-                ContextStoppedEvent.class,
-                ContextClosedEvent.class,
-                ApplicationEvent.class
-            })
-    public void name(ApplicationEvent e) {
-
-        System.out.println(e);
-    }
+    // @EventListener(
+    //         classes = {
+    //             ContextStartedEvent.class,
+    //             ContextRefreshedEvent.class,
+    //             ContextStoppedEvent.class,
+    //             ContextClosedEvent.class,
+    //             ApplicationEvent.class
+    //         })
+    // public void name(ApplicationEvent e) {
+    //
+    //     System.out.println(e);
+    // }
 
     @Bean("messageSource")
     public MessageSource messageSource() {

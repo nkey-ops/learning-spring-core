@@ -125,7 +125,6 @@
     </bean>
 
     <bean id="parent" abstract="true" class="main.Inheritance.Inheritor">
-        <!-- <constructor-arg name="id" value="5"></constructor-arg> -->
         <property name="name" value="parent name"></property>
     </bean>
 

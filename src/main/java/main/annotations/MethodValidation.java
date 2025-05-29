@@ -1,17 +1,14 @@
 package main.annotations;
 
+import jakarta.validation.constraints.Size;
+
 import main.validation.NonWeirdStringConstrainer;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
-
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Size;
 
 @Component
 @Validated
@@ -19,7 +16,7 @@ public class MethodValidation {
     private String name;
 
     public void setName(@NonWeirdStringConstrainer @Size(max = 1) String big) {
-       System.out.println(big); 
+        System.out.println(big);
     }
 
     @Bean
@@ -28,8 +25,8 @@ public class MethodValidation {
         m.setAdaptConstraintViolations(true);
         return m;
     }
-    @Bean
 
+    @Bean
     public static LocalValidatorFactoryBean localFactory() {
         return new LocalValidatorFactoryBean();
     }

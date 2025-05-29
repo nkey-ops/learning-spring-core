@@ -6,7 +6,32 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:annotation-config />
-    <bean class="main.annotations.NonClassPathScannedConf" />
-    <bean class="main.annotations.NonClassPathScannedConf.Bean0" />
+    <!-- <context:annotation-config /> -->
+    <!-- <bean class="main.annotations.NonClassPathScannedConf" /> -->
+    <!-- <bean class="main.annotations.NonClassPathScannedConf.Bean0" /> -->
+
+    <!-- <bean class="main.xmlconfig.NoIdBean" /> -->
+    <!-- <bean class="main.xmlconfig.NoIdBean.RequireNoIdBean"> -->
+    <!-- <constructor-arg type="main.xmlconfig.NoIdBean" ref="main.xmlconfig.NoIdBean#0" /> -->
+    <!-- </bean> -->
+
+
+    <bean name="test" class="main.annotations.PetControllService">
+        <constructor-arg value="name" />
+        <property name="namesAndObjects">
+            <map>
+                <entry key="key-with-text" value="text"></entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="child" parent="test">
+        <property name="namesAndObjects">
+            <map merge="true">
+                <entry key="key-with-text" value="not text" />
+                <entry key="new-key-here" value="value is here" />
+            </map>
+        </property>
+    </bean>
+
 </beans>

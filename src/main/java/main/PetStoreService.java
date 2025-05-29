@@ -7,8 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
 import main.annotations.PetControllService;
 
+@Component
 public class PetStoreService {
 
     private PetControllService petControllService;
